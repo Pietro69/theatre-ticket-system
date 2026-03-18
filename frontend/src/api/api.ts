@@ -13,7 +13,7 @@ import type {
   UserReservation,
 } from './types';
 
-const BASE = '/api';
+const BASE = `${import.meta.env.VITE_API_URL || ''}/api`;
 const TOKEN_KEY = 'klara-token';
 
 function authHeader(): Record<string, string> {
