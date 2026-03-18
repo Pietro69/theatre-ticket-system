@@ -5,6 +5,7 @@ import com.theatre.backend.dto.ReservationResponse;
 import com.theatre.backend.entity.Reservation;
 import com.theatre.backend.service.ReservationService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ReservationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Reservation> getAllReservations() {
         return reservationService.getAllReservations();
     }

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -75,9 +77,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/seats").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/seats/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/seats/**").hasRole("ADMIN")
-                // Admin — všetci používatelia a všetky rezervácie
+                // Admin — všetci používatelia (GET /api/reservations chráni @PreAuthorize v controlleri)
                 .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/reservations").hasRole("ADMIN")
                 // Zvyšok — prihlásený používateľ
                 .anyRequest().authenticated()
             )
