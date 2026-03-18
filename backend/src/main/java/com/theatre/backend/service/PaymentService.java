@@ -1,8 +1,9 @@
 package com.theatre.backend.service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.stripe.Stripe;
 import com.stripe.model.Event;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.theatre.backend.entity.Reservation;
@@ -103,11 +104,16 @@ public class PaymentService {
         Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
 
         if ("checkout.session.completed".equals(event.getType())) {
-            Session session = (Session) event.getDataObjectDeserializer()
-                    .getObject().orElseThrow();
+            // Použijeme getRawJson() kvôli nekompatibilite Stripe SDK s API verziou 2026-02-25.clover
+            String rawJson = event.getDataObjectDeserializer().getRawJson();
+            JsonObject sessionJson = JsonParser.parseString(rawJson).getAsJsonObject();
 
-            String reservationId = session.getMetadata().get("reservationId");
-            if (reservationId == null) return;
+            JsonObject metadata = sessionJson.getAsJsonObject("metadata");
+            if (metadata == null || !metadata.has("reservationId")) return;
+            String reservationId = metadata.get("reservationId").getAsString();
+
+            String paymentIntent = sessionJson.has("payment_intent") && !sessionJson.get("payment_intent").isJsonNull()
+                    ? sessionJson.get("payment_intent").getAsString() : null;
 
             Reservation reservation = reservationRepository.findById(Long.parseLong(reservationId))
                     .orElse(null);
@@ -116,7 +122,7 @@ public class PaymentService {
             if (reservation.getStatus() == ReservationStatus.PAID) return;
 
             reservation.setStatus(ReservationStatus.PAID);
-            reservation.setStripePaymentIntentId(session.getPaymentIntent());
+            reservation.setStripePaymentIntentId(paymentIntent);
             reservationRepository.save(reservation);
 
             List<Ticket> tickets = ticketRepository.findByReservationId(reservation.getId());
