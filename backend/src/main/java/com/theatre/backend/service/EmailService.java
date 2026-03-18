@@ -72,26 +72,35 @@ public class EmailService {
                 .orElse("—");
         double total = tickets.stream().mapToDouble(Ticket::getPrice).sum();
 
-        String body = """
-            <p style="color:#b0b0b0;font-size:15px;line-height:1.7;margin:0 0 20px;">
-              Vaša rezervácia bola úspešne vytvorená. Tu sú detaily:
-            </p>
-            """ + infoBox(new String[][]{
+        boolean isPending = reservation.getStatus() == com.theatre.backend.entity.ReservationStatus.PENDING;
+
+        String statusNote = isPending
+            ? "<p style=\"color:#b0b0b0;font-size:15px;line-height:1.7;margin:0 0 20px;\">Vaša rezervácia bola úspešne vytvorená a čaká na platbu. Dokončite platbu kliknutím na tlačidlo nižšie. Rezervácia je platná 2 hodiny.</p>"
+            : "<p style=\"color:#b0b0b0;font-size:15px;line-height:1.7;margin:0 0 20px;\">Vaša platba bola úspešne prijatá. Tu sú detaily vašej rezervácie:</p>";
+
+        String body = statusNote + infoBox(new String[][]{
                 {"Inscenácia", showTitle},
                 {"Dátum a čas", date},
                 {"Sála", hall},
                 {"Sedadlá", seatList},
                 {"Celková cena", String.format(Locale.FRANCE, "%.2f €", total)},
                 {"Číslo rezervácie", "#" + reservation.getId()},
-        }) + """
+        }) + (isPending ? "" : """
             <p style="color:#888;font-size:13px;margin-top:20px;">
               Prineste prosím číslo rezervácie na vstup. Tešíme sa na vás!
             </p>
-            """;
+            """);
 
-        String html = baseTemplate("Potvrdenie rezervácie", name, body, null, null,
+        String ctaUrl = isPending ? frontendUrl + "/my-reservations" : null;
+        String ctaLabel = isPending ? "Zaplatiť teraz" : null;
+        String subject = isPending
+            ? "Klára — Rezervácia #" + reservation.getId() + " čaká na platbu"
+            : "Klára — Potvrdenie platby #" + reservation.getId();
+        String emailTitle = isPending ? "Rezervácia čaká na platbu" : "Platba potvrdená";
+
+        String html = baseTemplate(emailTitle, name, body, ctaUrl, ctaLabel,
                 "Ak ste rezerváciu nevykonali vy, kontaktujte nás.");
-        send(email, "Klára — Potvrdenie rezervácie #" + reservation.getId(), html);
+        send(email, subject, html);
     }
 
     // ─── Zrušenie rezervácie ──────────────────────────────────────────────────
