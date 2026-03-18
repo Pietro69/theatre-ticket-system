@@ -4,15 +4,16 @@ import com.theatre.backend.entity.Performance;
 import com.theatre.backend.entity.Reservation;
 import com.theatre.backend.entity.Ticket;
 import com.theatre.backend.entity.User;
-import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -21,18 +22,16 @@ import java.util.Locale;
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+    private static final String RESEND_API = "https://api.resend.com/emails";
 
-    private final JavaMailSender mailSender;
+    @Value("${app.resend.api-key}")
+    private String resendApiKey;
 
-    @Value("${spring.mail.username}")
+    @Value("${app.resend.from}")
     private String fromEmail;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
 
     // ─── Verifikácia účtu ─────────────────────────────────────────────────────
 
@@ -159,17 +158,42 @@ public class EmailService {
 
     private void send(String to, String subject, String html) {
         try {
-            MimeMessage msg = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
-            helper.setFrom("Klára Divadlo <" + fromEmail + ">");
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            mailSender.send(msg);
-            log.info("Email sent to {} — {}", to, subject);
+            String body = """
+                {
+                  "from": "%s",
+                  "to": ["%s"],
+                  "subject": "%s",
+                  "html": %s
+                }
+                """.formatted(fromEmail, to, subject, toJsonString(html));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(RESEND_API))
+                    .header("Authorization", "Bearer " + resendApiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                log.info("Email sent via Resend to {} — {}", to, subject);
+            } else {
+                log.error("Resend error {}: {}", response.statusCode(), response.body());
+            }
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", to, e.getMessage());
         }
+    }
+
+    private String toJsonString(String html) {
+        return "\"" + html
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "")
+                + "\"";
     }
 
     private String resolveEmail(Reservation r) {
@@ -211,7 +235,6 @@ public class EmailService {
                 <tr><td align="center">
                   <table width="600" cellpadding="0" cellspacing="0"
                          style="max-width:600px;background:#0d0f18;border:1px solid #1e2030;border-radius:4px;overflow:hidden;">
-                    <!-- Header -->
                     <tr>
                       <td style="background:linear-gradient(135deg,#1a1520 0%%,#0d0f18 100%%);
                                  padding:36px 40px;border-bottom:1px solid #1e2030;text-align:center;">
@@ -222,7 +245,6 @@ public class EmailService {
                         </div>
                       </td>
                     </tr>
-                    <!-- Body -->
                     <tr>
                       <td style="padding:40px;">
                         <h1 style="font-family:Georgia,serif;color:#e8e0d0;font-size:24px;
@@ -233,7 +255,6 @@ public class EmailService {
                         %s
                       </td>
                     </tr>
-                    <!-- Footer -->
                     <tr>
                       <td style="background:#09090f;border-top:1px solid #1e2030;
                                  padding:24px 40px;text-align:center;">

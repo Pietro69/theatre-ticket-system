@@ -21,20 +21,6 @@ spring:
     deserialization:
       fail-on-null-for-primitives: false
 
-  mail:
-    host: smtp.gmail.com
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:kino.klara.notify@gmail.com}
-    password: ${MAIL_PASSWORD:vzyaxfekaufvnkqn}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            enable: false
-
 app:
   jwt:
     secret: ${JWT_SECRET:dGhpcklzQVZlcnlTZWN1cmVKd3RTZWNyZXRLZXlGb3JLbGFyYVRoZWF0cmVTeXN0ZW0h}
@@ -43,3 +29,6 @@ app:
     dir: ./uploads/shows
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
+  resend:
+    api-key: ${RESEND_API_KEY:}
+    from: ${RESEND_FROM:Klára Divadlo <onboarding@resend.dev>}
