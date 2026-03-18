@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://ep-plain-block-alov3qz3-pooler.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:npg_peOIyV31TufP}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -23,7 +23,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:dGhpcklzQVZlcnlTZWN1cmVKd3RTZWNyZXRLZXlGb3JLbGFyYVRoZWF0cmVTeXN0ZW0h}
+    secret: ${JWT_SECRET}
     expiration: 86400000
   upload:
     dir: ./uploads/shows
