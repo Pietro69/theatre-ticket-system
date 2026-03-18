@@ -21,6 +21,10 @@ spring:
     deserialization:
       fail-on-null-for-primitives: false
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 app:
   jwt:
     secret: ${JWT_SECRET}
