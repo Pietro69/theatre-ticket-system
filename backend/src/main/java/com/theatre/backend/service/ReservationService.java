@@ -276,9 +276,9 @@ public class ReservationService {
         List<Seat> seats = seatRepository.findByHallId(hallId);
 
         List<Long> occupiedSeats = ticketRepository
-                .findOccupiedSeatIdsByPerformanceIdAndReservationStatus(
+                .findOccupiedSeatIdsByPerformanceIdAndReservationStatusIn(
                         performanceId,
-                        ReservationStatus.ACTIVE
+                        List.of(ReservationStatus.PENDING, ReservationStatus.PAID, ReservationStatus.ACTIVE)
                 );
 
         return seats.stream()
