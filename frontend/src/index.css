@@ -429,9 +429,14 @@ footer { padding: 60px 56px 32px; background: var(--surface); border-top: 1px so
 .res-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
 .res-status-badge { font-size: 11px; letter-spacing: 1px; padding: 4px 12px; border-radius: 2px; text-transform: uppercase; }
 .res-status-badge.active { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); color: var(--gold); }
+.res-status-badge.paid { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); color: var(--gold); }
+.res-status-badge.pending { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #7eb8f7; }
 .res-status-badge.cancelled { background: rgba(90,100,120,0.15); border: 1px solid rgba(90,100,120,0.3); color: var(--muted); }
 
 .res-btn-detail { font-size: 11px; padding: 7px 16px; letter-spacing: 1px; }
+.btn-pay { background: var(--gold); color: #07090f; border: none; padding: 7px 16px; border-radius: 2px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: background .2s; white-space: nowrap; }
+.btn-pay:hover { background: var(--gold2); }
+.btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-cancel { background: none; border: 1px solid rgba(192,57,43,0.4); color: #e05252; padding: 7px 16px; border-radius: 2px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .2s, border-color .2s; white-space: nowrap; }
 .btn-cancel:hover { background: rgba(192,57,43,0.12); border-color: #e05252; }
 .btn-cancel:disabled { opacity: 0.5; cursor: not-allowed; }

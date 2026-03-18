@@ -80,11 +80,13 @@ export interface RegisterResponse {
 export interface UserReservation {
   id: number;
   performance: Performance;
-  status: 'ACTIVE' | 'CANCELED';
+  status: 'PENDING' | 'PAID' | 'ACTIVE' | 'CANCELED' | 'EXPIRED';
   createdAt: string;
+  expiresAt?: string;
   user?: User;
   guestName?: string;
   guestEmail?: string;
+  seatIds?: number[];
 }
 
 export interface AdminReservation {
@@ -93,7 +95,7 @@ export interface AdminReservation {
   user?: User;
   guestName?: string;
   guestEmail?: string;
-  status: 'ACTIVE' | 'CANCELED';
+  status: 'PENDING' | 'PAID' | 'ACTIVE' | 'CANCELED' | 'EXPIRED';
   createdAt: string;
   seatIds?: number[];
 }

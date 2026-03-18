@@ -16,6 +16,8 @@ import AdminHallsPage from './pages/admin/AdminHallsPage'
 import AdminReservationsPage from './pages/admin/AdminReservationsPage'
 import AdminStatsPage from './pages/admin/AdminStatsPage'
 import VerifyPage from './pages/VerifyPage'
+import PaymentSuccessPage from './pages/PaymentSuccessPage'
+import PaymentCancelPage from './pages/PaymentCancelPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user } = useApp()
@@ -44,6 +46,8 @@ function AppRoutes() {
         <Route path="/admin/stats" element={<AdminRoute><AdminStatsPage /></AdminRoute>} />
 
         <Route path="/verify" element={<VerifyPage />} />
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
+        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

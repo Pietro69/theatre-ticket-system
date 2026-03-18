@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { usersApi, reservationsApi } from '../api/api'
+import { usersApi, reservationsApi, paymentsApi } from '../api/api'
 import type { UserReservation } from '../api/types'
 import { formatDate, formatTime } from '../utils'
 import Footer from '../components/Footer'
@@ -13,6 +13,7 @@ export default function MyReservationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelling, setCancelling] = useState<number | null>(null)
+  const [paying, setPaying] = useState<number | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -24,6 +25,17 @@ export default function MyReservationsPage() {
       .catch(() => setError('Nepodarilo sa načítať rezervácie.'))
       .finally(() => setLoading(false))
   }, [user])
+
+  const handlePay = async (id: number) => {
+    setPaying(id)
+    try {
+      const { url } = await paymentsApi.createCheckout(id)
+      window.location.href = url
+    } catch {
+      setError('Nepodarilo sa otvoriť platobnú bránu. Skúste znova.')
+      setPaying(null)
+    }
+  }
 
   const handleCancel = async (id: number) => {
     if (!window.confirm('Naozaj chcete zrušiť túto rezerváciu?')) return
@@ -64,8 +76,9 @@ export default function MyReservationsPage() {
     )
   }
 
-  const active = reservations.filter(r => r.status === 'ACTIVE')
-  const cancelled = reservations.filter(r => r.status === 'CANCELED')
+  const pending = reservations.filter(r => r.status === 'PENDING')
+  const active = reservations.filter(r => r.status === 'ACTIVE' || r.status === 'PAID')
+  const cancelled = reservations.filter(r => r.status === 'CANCELED' || r.status === 'EXPIRED')
 
   return (
     <div>
@@ -92,9 +105,28 @@ export default function MyReservationsPage() {
           </div>
         ) : (
           <>
+            {pending.length > 0 && (
+              <div className="my-res-group">
+                <div className="my-res-group-label">Čakajúce na platbu ({pending.length})</div>
+                <div className="res-list">
+                  {pending.map(r => (
+                    <ReservationCard
+                      key={r.id}
+                      reservation={r}
+                      onCancel={handleCancel}
+                      cancelling={cancelling}
+                      onPay={handlePay}
+                      paying={paying}
+                      onShowDetail={() => navigate(`/shows/${r.performance.show.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {active.length > 0 && (
               <div className="my-res-group">
-                <div className="my-res-group-label">Aktívne ({active.length})</div>
+                <div className="my-res-group-label">Zaplatené ({active.length})</div>
                 <div className="res-list">
                   {active.map(r => (
                     <ReservationCard
@@ -102,6 +134,8 @@ export default function MyReservationsPage() {
                       reservation={r}
                       onCancel={handleCancel}
                       cancelling={cancelling}
+                      onPay={handlePay}
+                      paying={paying}
                       onShowDetail={() => navigate(`/shows/${r.performance.show.id}`)}
                     />
                   ))}
@@ -119,6 +153,8 @@ export default function MyReservationsPage() {
                       reservation={r}
                       onCancel={handleCancel}
                       cancelling={cancelling}
+                      onPay={handlePay}
+                      paying={paying}
                       onShowDetail={() => navigate(`/shows/${r.performance.show.id}`)}
                     />
                   ))}
@@ -137,11 +173,19 @@ interface CardProps {
   reservation: UserReservation
   onCancel: (id: number) => void
   cancelling: number | null
+  onPay: (id: number) => void
+  paying: number | null
   onShowDetail: () => void
 }
 
-function ReservationCard({ reservation: r, onCancel, cancelling, onShowDetail }: CardProps) {
-  const isCancelled = r.status === 'CANCELED'
+function ReservationCard({ reservation: r, onCancel, cancelling, onPay, paying, onShowDetail }: CardProps) {
+  const isCancelled = r.status === 'CANCELED' || r.status === 'EXPIRED'
+  const isPending = r.status === 'PENDING'
+  const isPaid = r.status === 'PAID' || r.status === 'ACTIVE'
+
+  const statusLabel = r.status === 'EXPIRED' ? 'Expirovaná' : isCancelled ? 'Zrušená' : isPending ? 'Čakajúca' : 'Zaplatená'
+  const statusClass = isCancelled ? 'cancelled' : isPending ? 'pending' : 'paid'
+
   return (
     <div className={`res-card${isCancelled ? ' res-card--cancelled' : ''}`}>
       <div className="res-card-date">
@@ -167,13 +211,22 @@ function ReservationCard({ reservation: r, onCancel, cancelling, onShowDetail }:
       </div>
 
       <div className="res-card-right">
-        <div className={`res-status-badge ${isCancelled ? 'cancelled' : 'active'}`}>
-          {isCancelled ? 'Zrušená' : 'Aktívna'}
+        <div className={`res-status-badge ${statusClass}`}>
+          {statusLabel}
         </div>
         <button className="btn-ghost res-btn-detail" onClick={onShowDetail}>
           Detail predstavenia
         </button>
-        {!isCancelled && (
+        {isPending && (
+          <button
+            className="btn-pay"
+            onClick={() => onPay(r.id)}
+            disabled={paying === r.id}
+          >
+            {paying === r.id ? 'Presmerovávam...' : 'Zaplatiť'}
+          </button>
+        )}
+        {!isCancelled && !isPaid && (
           <button
             className="btn-cancel"
             onClick={() => onCancel(r.id)}

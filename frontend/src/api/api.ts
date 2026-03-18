@@ -130,6 +130,11 @@ export const usersApi = {
   getReservations: (userId: number) => get<UserReservation[]>(`/users/${userId}/reservations`),
 };
 
+export const paymentsApi = {
+  createCheckout: (reservationId: number) =>
+    post<{ url: string }>(`/payments/checkout/${reservationId}`, {}),
+};
+
 export const authApi = {
   login: (email: string, password: string) =>
     post<LoginResponse>('/auth/login', { email, password }),
