@@ -23,7 +23,7 @@ spring:
 
   mail:
     host: smtp.gmail.com
-    port: 587
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:kino.klara.notify@gmail.com}
     password: ${MAIL_PASSWORD:vzyaxfekaufvnkqn}
     properties:
@@ -32,6 +32,8 @@ spring:
           auth: true
           starttls:
             enable: true
+          ssl:
+            enable: false
 
 app:
   jwt:
