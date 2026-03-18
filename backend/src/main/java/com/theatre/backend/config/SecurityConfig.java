@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/halls/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/seats/**").permitAll()
                 // Verejné — vytvorenie rezervácie (aj hostia)
-                .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
+                .requestMatchers("/api/reservations").permitAll()
                 // Verejné — platby
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/payments/checkout/**").permitAll()
