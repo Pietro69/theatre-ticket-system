@@ -1,22 +1,16 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/theatredb
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${DB_URL:jdbc:postgresql://ep-plain-block-alov3qz3-pooler.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_peOIyV31TufP}
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   servlet:
     multipart:
@@ -30,8 +24,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: kino.klara.notify@gmail.com
-    password: vzyaxfekaufvnkqn
+    username: ${MAIL_USERNAME:kino.klara.notify@gmail.com}
+    password: ${MAIL_PASSWORD:vzyaxfekaufvnkqn}
     properties:
       mail:
         smtp:
@@ -41,9 +35,9 @@ spring:
 
 app:
   jwt:
-    secret: dGhpcklzQVZlcnlTZWN1cmVKd3RTZWNyZXRLZXlGb3JLbGFyYVRoZWF0cmVTeXN0ZW0h
+    secret: ${JWT_SECRET:dGhpcklzQVZlcnlTZWN1cmVKd3RTZWNyZXRLZXlGb3JLbGFyYVRoZWF0cmVTeXN0ZW0h}
     expiration: 86400000
   upload:
     dir: ./uploads/shows
   frontend:
-    url: http://localhost:5173
+    url: ${FRONTEND_URL:http://localhost:5173}
