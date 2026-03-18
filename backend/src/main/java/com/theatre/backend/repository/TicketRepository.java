@@ -19,23 +19,23 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
         from Ticket t
         where t.seat.id = :seatId
           and t.reservation.performance.id = :performanceId
-          and t.reservation.status = :status
+          and t.reservation.status in :statuses
     """)
-    boolean existsBySeatIdAndPerformanceIdAndReservationStatus(
+    boolean existsBySeatIdAndPerformanceIdAndReservationStatusIn(
             @Param("seatId") Long seatId,
             @Param("performanceId") Long performanceId,
-            @Param("status") ReservationStatus status
+            @Param("statuses") List<ReservationStatus> statuses
     );
 
     @Query("""
         select t.seat.id
         from Ticket t
         where t.reservation.performance.id = :performanceId
-          and t.reservation.status = :status
+          and t.reservation.status in :statuses
     """)
-    List<Long> findOccupiedSeatIdsByPerformanceIdAndReservationStatus(
+    List<Long> findOccupiedSeatIdsByPerformanceIdAndReservationStatusIn(
             @Param("performanceId") Long performanceId,
-            @Param("status") ReservationStatus status
+            @Param("statuses") List<ReservationStatus> statuses
     );
 
     void deleteByReservationId(Long reservationId);

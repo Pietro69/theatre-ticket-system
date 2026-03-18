@@ -38,4 +38,10 @@ public class Reservation {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    private LocalDateTime expiresAt;
+
+    private String stripeSessionId;
+
+    private String stripePaymentIntentId;
 }

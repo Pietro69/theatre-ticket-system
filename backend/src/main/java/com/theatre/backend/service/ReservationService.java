@@ -182,11 +182,15 @@ public class ReservationService {
 
     private void applyReservationDefaults(Reservation reservation) {
         if (reservation.getStatus() == null) {
-            reservation.setStatus(ReservationStatus.ACTIVE);
+            reservation.setStatus(ReservationStatus.PENDING);
         }
 
         if (reservation.getCreatedAt() == null) {
             reservation.setCreatedAt(LocalDateTime.now());
+        }
+
+        if (reservation.getExpiresAt() == null) {
+            reservation.setExpiresAt(LocalDateTime.now().plusHours(2));
         }
     }
 
@@ -197,10 +201,10 @@ public class ReservationService {
     }
 
     private void validateSeatAvailability(Long performanceId, Long seatId) {
-        boolean occupied = ticketRepository.existsBySeatIdAndPerformanceIdAndReservationStatus(
+        boolean occupied = ticketRepository.existsBySeatIdAndPerformanceIdAndReservationStatusIn(
                 seatId,
                 performanceId,
-                ReservationStatus.ACTIVE
+                List.of(ReservationStatus.PENDING, ReservationStatus.PAID)
         );
 
         if (occupied) {
@@ -229,9 +233,9 @@ public class ReservationService {
             throw new BadRequestException("Performance not found.");
         }
 
-        return ticketRepository.findOccupiedSeatIdsByPerformanceIdAndReservationStatus(
+        return ticketRepository.findOccupiedSeatIdsByPerformanceIdAndReservationStatusIn(
                 performanceId,
-                ReservationStatus.ACTIVE);
+                List.of(ReservationStatus.PENDING, ReservationStatus.PAID));
     }
 
     @Transactional

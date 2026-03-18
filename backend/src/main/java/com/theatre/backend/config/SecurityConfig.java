@@ -53,6 +53,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/seats/**").permitAll()
                 // Verejné — vytvorenie rezervácie (aj hostia)
                 .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
+                // Verejné — platby
+                .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/payments/checkout/**").permitAll()
                 // Verejné — uploads a H2
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
