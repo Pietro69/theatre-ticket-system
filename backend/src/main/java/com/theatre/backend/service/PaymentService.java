@@ -3,6 +3,7 @@ package com.theatre.backend.service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.stripe.Stripe;
+import com.stripe.model.checkout.Session;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
