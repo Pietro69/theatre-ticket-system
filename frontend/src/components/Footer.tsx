@@ -42,7 +42,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <span>© 2025 Klára. Všetky práva vyhradené.</span>
+        <span>© 2026 Klára. Všetky práva vyhradené.</span>
         <span>Navrhnuté pre VPSI projekt</span>
       </div>
     </footer>
