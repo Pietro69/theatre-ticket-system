@@ -15,11 +15,11 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns("http://localhost:*", "https://*.vercel.app", "${app.frontend.url}")
+                .allowedOriginPatterns("http://localhost:*", "https://*.vercel.app", "https://klara-divadlo.site", "https://www.klara-divadlo.site")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
         registry.addMapping("/uploads/**")
-                .allowedOriginPatterns("http://localhost:*", "https://*.vercel.app", "${app.frontend.url}")
+                .allowedOriginPatterns("http://localhost:*", "https://*.vercel.app", "https://klara-divadlo.site", "https://www.klara-divadlo.site")
                 .allowedMethods("GET");
     }
 
