@@ -10,6 +10,23 @@ function formatDateTime(iso: string) {
   return d.toLocaleString('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+function reservationStatusLabel(status: AdminReservation['status']) {
+  switch (status) {
+    case 'PENDING':
+      return 'Čaká na platbu'
+    case 'PAID':
+      return 'Zaplatená'
+    case 'ACTIVE':
+      return 'Aktívna'
+    case 'CANCELED':
+      return 'Zrušená'
+    case 'EXPIRED':
+      return 'Expirovaná'
+    default:
+      return status
+  }
+}
+
 export default function AdminReservationsPage() {
   const navigate = useNavigate()
   const [reservations, setReservations] = useState<AdminReservation[]>([])
@@ -35,8 +52,15 @@ export default function AdminReservationsPage() {
     setCancelConfirm(null)
   }
 
-  const filtered = filter === 'ALL' ? reservations : reservations.filter(r => r.status === filter)
-  const activeCount = reservations.filter(r => r.status === 'ACTIVE').length
+  const filtered =
+    filter === 'ALL'
+      ? reservations
+      : filter === 'ACTIVE'
+        ? reservations.filter(r => r.status === 'ACTIVE' || r.status === 'PAID')
+        : reservations.filter(r => r.status === 'CANCELED')
+  const activeCount = reservations.filter(
+    r => r.status === 'ACTIVE' || r.status === 'PAID'
+  ).length
   const canceledCount = reservations.filter(r => r.status === 'CANCELED').length
 
   return (
@@ -101,7 +125,6 @@ export default function AdminReservationsPage() {
                       <div>{r.customerName ?? '—'}</div>
                       <div className="muted">{r.customerEmail ?? ''}</div>
                     </td>
-                    </td>
                     <td>
                       {r.seatLabels && r.seatLabels.length > 0
                         ? r.seatLabels.join(', ')
@@ -112,11 +135,11 @@ export default function AdminReservationsPage() {
                     <td>{formatDateTime(r.createdAt)}</td>
                     <td>
                       <span className={`res-status-badge ${r.status.toLowerCase()}`}>
-                        {r.status === 'ACTIVE' ? 'Aktívna' : 'Zrušená'}
+                        {reservationStatusLabel(r.status)}
                       </span>
                     </td>
                     <td>
-                      {r.status === 'ACTIVE' && (
+                      {(r.status === 'ACTIVE' || r.status === 'PAID') &&  (
                         <div className="admin-actions">
                           {cancelConfirm === r.id ? (
                             <>
