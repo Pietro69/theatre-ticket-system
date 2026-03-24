@@ -95,13 +95,12 @@ export default function AdminReservationsPage() {
                 return (
                   <tr key={r.id} className={r.status === 'CANCELED' ? 'admin-tr-canceled' : ''}>
                     <td className="admin-td-id">{r.id}</td>
-                    <td className="admin-td-main">{r.performance?.show?.title ?? '—'}</td>
-                    <td>{r.performance?.startTime ? formatDateTime(r.performance.startTime) : '—'}</td>
+                    <td className="admin-td-main">{r.showTitle ?? '—'}</td>
+                    <td>{r.performanceStartTime ? formatDateTime(r.performanceStartTime) : '—'}</td>
                     <td>
-                      {r.user
-                        ? <span className="admin-badge">{r.user.name}</span>
-                        : <span>{r.guestName ?? '—'}<br /><small style={{ color: 'var(--muted)' }}>{r.guestEmail}</small></span>
-                      }
+                      <div>{r.customerName ?? '—'}</div>
+                      <div className="muted">{r.customerEmail ?? ''}</div>
+                    </td>
                     </td>
                     <td>
                       {r.seatLabels && r.seatLabels.length > 0

@@ -1,5 +1,6 @@
 package com.theatre.backend.controller;
 
+import com.theatre.backend.dto.AdminReservationResponse;
 import com.theatre.backend.dto.CreateReservationRequest;
 import com.theatre.backend.dto.ReservationResponse;
 import com.theatre.backend.entity.Reservation;
@@ -22,10 +23,10 @@ public class ReservationController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<ReservationResponse> getAllReservations() {
+    public List<AdminReservationResponse> getAllReservations() {
         return reservationService.getAllReservations()
                 .stream()
-                .map(reservationService::mapToResponse)
+                .map(reservationService::mapToAdminResponse)
                 .toList();
     }
 

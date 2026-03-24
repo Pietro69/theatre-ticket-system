@@ -1,5 +1,6 @@
 package com.theatre.backend.service;
 
+import com.theatre.backend.dto.AdminReservationResponse;
 import com.theatre.backend.dto.CreateReservationRequest;
 import com.theatre.backend.dto.ReservationResponse;
 import com.theatre.backend.dto.SeatAvailabilityResponse;
@@ -331,5 +332,47 @@ public class ReservationService {
                 .orElseThrow(() -> new BadRequestException("Reservation not found"));
 
         return mapToResponse(reservation);
+    }
+
+    public AdminReservationResponse mapToAdminResponse(Reservation reservation) {
+        List<Ticket> tickets = ticketRepository.findByReservationId(reservation.getId());
+
+        List<Long> seatIds = tickets.stream()
+                .map(ticket -> ticket.getSeat().getId())
+                .toList();
+
+        List<String> seatLabels = tickets.stream()
+                .map(ticket -> formatSeatLabel(ticket.getSeat()))
+                .toList();
+
+        String customerName = reservation.getUser() != null
+                ? reservation.getUser().getName()
+                : reservation.getGuestName();
+
+        String customerEmail = reservation.getUser() != null
+                ? reservation.getUser().getEmail()
+                : reservation.getGuestEmail();
+
+        return AdminReservationResponse.builder()
+                .id(reservation.getId())
+                .performanceId(reservation.getPerformance() != null ? reservation.getPerformance().getId() : null)
+                .showTitle(
+                        reservation.getPerformance() != null && reservation.getPerformance().getShow() != null
+                                ? reservation.getPerformance().getShow().getTitle()
+                                : null
+                )
+                .performanceStartTime(
+                        reservation.getPerformance() != null
+                                ? reservation.getPerformance().getStartTime()
+                                : null
+                )
+                .userId(reservation.getUser() != null ? reservation.getUser().getId() : null)
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .status(reservation.getStatus().name())
+                .createdAt(reservation.getCreatedAt())
+                .seatIds(seatIds)
+                .seatLabels(seatLabels)
+                .build();
     }
 }

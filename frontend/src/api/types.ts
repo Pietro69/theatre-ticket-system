@@ -93,11 +93,11 @@ export interface UserReservation {
 export interface AdminReservation {
   id: number;
   performanceId?: number;
-  performance?: Performance;
-  user?: User;
+  showTitle?: string;
+  performanceStartTime?: string;
   userId?: number;
-  guestName?: string;
-  guestEmail?: string;
+  customerName?: string;
+  customerEmail?: string;
   status: 'PENDING' | 'PAID' | 'ACTIVE' | 'CANCELED' | 'EXPIRED';
   createdAt: string;
   seatIds?: number[];
