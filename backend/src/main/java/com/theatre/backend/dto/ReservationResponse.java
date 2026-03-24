@@ -22,4 +22,5 @@ public class ReservationResponse {
     private String guestEmail;
 
     private List<Long> seatIds;
+    private List<String> seatLabels;
 }

@@ -103,7 +103,13 @@ export default function AdminReservationsPage() {
                         : <span>{r.guestName ?? '—'}<br /><small style={{ color: 'var(--muted)' }}>{r.guestEmail}</small></span>
                       }
                     </td>
-                    <td>{r.seatIds && r.seatIds.length > 0 ? r.seatIds.join(', ') : '—'}</td>
+                    <td>
+                      {r.seatLabels && r.seatLabels.length > 0
+                        ? r.seatLabels.join(', ')
+                        : r.seatIds && r.seatIds.length > 0
+                          ? r.seatIds.join(', ')
+                          : '—'}
+                    </td>
                     <td>{formatDateTime(r.createdAt)}</td>
                     <td>
                       <span className={`res-status-badge ${r.status.toLowerCase()}`}>

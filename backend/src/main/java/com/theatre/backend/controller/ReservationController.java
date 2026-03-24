@@ -22,8 +22,11 @@ public class ReservationController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<Reservation> getAllReservations() {
-        return reservationService.getAllReservations();
+    public List<ReservationResponse> getAllReservations() {
+        return reservationService.getAllReservations()
+                .stream()
+                .map(reservationService::mapToResponse)
+                .toList();
     }
 
     @PostMapping

@@ -292,10 +292,14 @@ public class ReservationService {
     }
 
     public ReservationResponse mapToResponse(Reservation reservation) {
+        List<Ticket> tickets = ticketRepository.findByReservationId(reservation.getId());
 
-        List<Long> seatIds = ticketRepository.findByReservationId(reservation.getId())
-                .stream()
+        List<Long> seatIds = tickets.stream()
                 .map(ticket -> ticket.getSeat().getId())
+                .toList();
+
+        List<String> seatLabels = tickets.stream()
+                .map(ticket -> formatSeatLabel(ticket.getSeat()))
                 .toList();
 
         return ReservationResponse.builder()
@@ -307,7 +311,19 @@ public class ReservationService {
                 .guestName(reservation.getGuestName())
                 .guestEmail(reservation.getGuestEmail())
                 .seatIds(seatIds)
+                .seatLabels(seatLabels)
                 .build();
+    }
+
+    private String formatSeatLabel(Seat seat) {
+        int rowIndex = seat.getRowNumber() - 1;
+
+        if (rowIndex < 0) {
+            return "?" + seat.getSeatNumber();
+        }
+
+        char rowLetter = (char) ('A' + rowIndex);
+        return rowLetter + String.valueOf(seat.getSeatNumber());
     }
 
     public ReservationResponse getReservationById(Long reservationId) {

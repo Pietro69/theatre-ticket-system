@@ -55,6 +55,7 @@ export interface ReservationResponse {
   guestName?: string;
   guestEmail?: string;
   seatIds: number[];
+  seatLabels?: string[];
 }
 
 export interface User {
@@ -91,11 +92,14 @@ export interface UserReservation {
 
 export interface AdminReservation {
   id: number;
-  performance: Performance;
+  performanceId?: number;
+  performance?: Performance;
   user?: User;
+  userId?: number;
   guestName?: string;
   guestEmail?: string;
   status: 'PENDING' | 'PAID' | 'ACTIVE' | 'CANCELED' | 'EXPIRED';
   createdAt: string;
   seatIds?: number[];
+  seatLabels?: string[];
 }
