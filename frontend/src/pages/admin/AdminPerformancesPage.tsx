@@ -69,7 +69,7 @@ export default function AdminPerformancesPage() {
     const payload = {
       show: { id: parseInt(form.showId) },
       hall: { id: parseInt(form.hallId) },
-      startTime: new Date(form.startTime).toISOString(),
+      startTime: form.startTime,
       status: form.status,
     }
     try {
