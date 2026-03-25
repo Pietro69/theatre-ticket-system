@@ -1,18 +1,18 @@
 package com.theatre.backend.service;
 
-import com.theatre.backend.entity.Hall;
-import com.theatre.backend.entity.Performance;
-import com.theatre.backend.entity.Reservation;
-import com.theatre.backend.entity.Show;
+import com.theatre.backend.entity.*;
 import com.theatre.backend.exception.NotFoundException;
 import com.theatre.backend.repository.HallRepository;
 import com.theatre.backend.repository.PerformanceRepository;
 import com.theatre.backend.repository.ReservationRepository;
 import com.theatre.backend.repository.ShowRepository;
 import com.theatre.backend.repository.TicketRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -91,4 +91,33 @@ public class PerformanceService {
         reservationRepository.deleteAll(reservations);
         performanceRepository.delete(performance);
     }
+
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void finishPastPerformances() {
+        List<Performance> scheduledPerformances = performanceRepository.findByStatus(PerformanceStatus.SCHEDULED);
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Performance> toUpdate = new ArrayList<>();
+
+        for (Performance performance : scheduledPerformances) {
+            if (performance.getStartTime() == null || performance.getShow() == null || performance.getShow().getDurationMinutes() == null) {
+                continue;
+            }
+
+            LocalDateTime performanceEnd = performance.getStartTime()
+                    .plusMinutes(performance.getShow().getDurationMinutes());
+
+            if (performanceEnd.isBefore(now)) {
+                performance.setStatus(PerformanceStatus.FINISHED);
+                toUpdate.add(performance);
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            performanceRepository.saveAll(toUpdate);
+        }
+    }
+
+
 }
