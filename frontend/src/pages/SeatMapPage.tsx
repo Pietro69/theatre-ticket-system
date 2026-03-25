@@ -16,7 +16,7 @@ export default function SeatMapPage() {
   const { performanceId } = useParams<{ performanceId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, setCartCount } = useApp()
+  const { user, setCartCount, openLoginModal, openRegisterModal } = useApp()
 
   const state = location.state as LocationState | null
   const [performance, setPerformance] = useState<Performance | null>(state?.performance ?? null)
@@ -25,8 +25,6 @@ export default function SeatMapPage() {
   const [hallSeats, setHallSeats] = useState<Seat[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [step, setStep] = useState<BookingStep>('seats')
-  const [guestName, setGuestName] = useState('')
-  const [guestEmail, setGuestEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -103,29 +101,37 @@ export default function SeatMapPage() {
 
   const handleContinue = () => {
     if (selectedIds.size === 0) return
+
+    if (!user) {
+      setError('Pre pokračovanie v rezervácii sa musíte prihlásiť alebo zaregistrovať.')
+      openLoginModal()
+      return
+    }
+
+    setError('')
     setStep('form')
   }
 
   const handleSubmitReservation = async () => {
-    if (!performance) return
-    if (!user && (!guestName.trim() || !guestEmail.trim())) {
-      setError('Prosím vyplňte meno a e-mail.')
+    if (!performance || !user) {
+      setError('Pre vytvorenie rezervácie sa musíte prihlásiť.')
+      openLoginModal()
       return
     }
+
     setError('')
     setSubmitting(true)
+
     try {
       const req: CreateReservationRequest = {
         performanceId: performance.id,
         seatIds: Array.from(selectedIds),
-        ...(user
-          ? { userId: user.id }
-          : { guestName: guestName.trim(), guestEmail: guestEmail.trim() }
-        ),
+        userId: user.id,
       }
+
       const res = await reservationsApi.create(req)
       setReservationId(res.id)
-      setReservationEmail(res.guestEmail ?? user?.email ?? '')
+      setReservationEmail(user.email)
       setCartCount(0)
       setStep('success')
     } catch (err) {
@@ -263,12 +269,18 @@ export default function SeatMapPage() {
                 </div>
               </div>
 
+              {!user && (
+                <div className="error-msg" style={{ marginTop: 12 }}>
+                  Pre dokončenie rezervácie sa musíte prihlásiť alebo zaregistrovať.
+                </div>
+              )}
+
               <button
                 className="btn-book"
                 onClick={handleContinue}
                 disabled={selectedIds.size === 0}
               >
-                Pokračovať k platbe
+                {user ? 'Pokračovať k platbe' : 'Prihlásiť sa pre pokračovanie'}
               </button>
             </>
           )}
@@ -280,33 +292,10 @@ export default function SeatMapPage() {
                 {selectedIds.size} sedadl{selectedIds.size === 1 ? 'o' : 'á'} · {total.toFixed(2)} €
               </div>
 
-              {user ? (
-                <div className="guest-info-block">
-                  <strong style={{ fontSize: 14 }}>{user.name}</strong>
-                  <p>{user.email}</p>
-                </div>
-              ) : (
-                <div className="booking-form">
-                  <div className="form-group">
-                    <label>Meno a priezvisko</label>
-                    <input
-                      type="text"
-                      value={guestName}
-                      onChange={e => setGuestName(e.target.value)}
-                      placeholder="Ján Novák"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>E-mail</label>
-                    <input
-                      type="email"
-                      value={guestEmail}
-                      onChange={e => setGuestEmail(e.target.value)}
-                      placeholder="vas@email.sk"
-                    />
-                  </div>
-                </div>
-              )}
+              <div className="guest-info-block">
+                <strong style={{ fontSize: 14 }}>{user?.name}</strong>
+                <p>{user?.email}</p>
+              </div>
 
               {error && <div className="error-msg">{error}</div>}
 
