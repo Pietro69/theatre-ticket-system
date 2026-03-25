@@ -18,6 +18,7 @@ spring:
       max-request-size: 10MB
 
   jackson:
+    time-zone: Europe/Bratislava
     deserialization:
       fail-on-null-for-primitives: false
 
