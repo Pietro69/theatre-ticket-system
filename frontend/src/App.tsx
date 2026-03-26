@@ -5,6 +5,7 @@ import Nav from './components/Nav'
 import HomePage from './pages/HomePage'
 import ShowsPage from './pages/ShowsPage'
 import HowPage from './pages/HowPage'
+import AboutPage from './pages/AboutPage'
 import ShowDetailPage from './pages/ShowDetailPage'
 import SeatMapPage from './pages/SeatMapPage'
 import MyReservationsPage from './pages/MyReservationsPage'
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/shows/:showId" element={<ShowDetailPage />} />
         <Route path="/performances/:performanceId/seats" element={<SeatMapPage />} />
         <Route path="/how" element={<HowPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />
         <Route path="/account" element={<AccountPage />} />
 
