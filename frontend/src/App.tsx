@@ -19,6 +19,7 @@ import AdminStatsPage from './pages/admin/AdminStatsPage'
 import VerifyPage from './pages/VerifyPage'
 import PaymentSuccessPage from './pages/PaymentSuccessPage'
 import PaymentCancelPage from './pages/PaymentCancelPage'
+import PayRedirectPage from './pages/PayRedirectPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user } = useApp()
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="/verify" element={<VerifyPage />} />
         <Route path="/payment/success" element={<PaymentSuccessPage />} />
         <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+        <Route path="/pay/:reservationId" element={<PayRedirectPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
