@@ -20,24 +20,18 @@ function formatEur(n: number) {
   return n.toLocaleString('sk-SK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 }
 
-function exportCSV(reservations: AdminReservation[], performances: Performance[]) {
-  const perfMap: Record<number, Performance> = {}
-  performances.forEach(p => { perfMap[p.id] = p })
-
+function exportCSV(reservations: AdminReservation[], _performances: Performance[]) {
   const rows = [
     ['ID', 'Inscenácia', 'Dátum hrania', 'Zákazník', 'Email', 'Stav', 'Vytvorená'],
-    ...reservations.map(r => {
-      const perf = r.performance
-      return [
-        r.id,
-        perf?.show?.title ?? '—',
-        perf?.startTime ? new Date(perf.startTime).toLocaleString('sk-SK') : '—',
-        r.user ? r.user.name : (r.guestName ?? '—'),
-        r.user ? r.user.email : (r.guestEmail ?? '—'),
-        r.status === 'ACTIVE' ? 'Aktívna' : 'Zrušená',
-        new Date(r.createdAt).toLocaleString('sk-SK'),
-      ]
-    }),
+    ...reservations.map(r => [
+      r.id,
+      r.showTitle ?? '—',
+      r.performanceStartTime ? new Date(r.performanceStartTime).toLocaleString('sk-SK') : '—',
+      r.customerName ?? '—',
+      r.customerEmail ?? '—',
+      r.status === 'ACTIVE' ? 'Aktívna' : 'Zrušená',
+      new Date(r.createdAt).toLocaleString('sk-SK'),
+    ]),
   ]
 
   const csv = rows.map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
@@ -274,30 +268,34 @@ function computeStats(
   performances.forEach(p => {
     const total = perfSeats[p.hall.id] ?? 0
     if (total === 0) return
-    const occupied = activeRes.filter(r => r.performance?.id === p.id).length
-    occupancies.push(Math.min(100, Math.round((occupied / total) * 100)))
+    const occupiedTickets = activeRes
+      .filter(r => r.performanceId === p.id)
+      .reduce((sum, r) => sum + (r.seatIds?.length ?? 0), 0)
+    occupancies.push(Math.min(100, Math.round((occupiedTickets / total) * 100)))
   })
   const avgOccupancy = occupancies.length > 0
     ? Math.round(occupancies.reduce((a, b) => a + b, 0) / occupancies.length)
     : 0
 
-  // Top shows
-  const showStats: Record<number, { reservations: number; tickets: number; revenue: number }> = {}
+  // Top shows — map performanceId → show via performances array
+  const perfToShow: Record<number, Show> = {}
+  performances.forEach(p => { if (p.id && p.show) perfToShow[p.id] = p.show })
+
+  const showStats: Record<number, { show: Show; reservations: number; tickets: number; revenue: number }> = {}
   activeRes.forEach(r => {
-    const showId = r.performance?.show?.id
-    if (!showId) return
-    if (!showStats[showId]) showStats[showId] = { reservations: 0, tickets: 0, revenue: 0 }
-    showStats[showId].reservations++
+    if (!r.performanceId) return
+    const show = perfToShow[r.performanceId]
+    if (!show) return
+    if (!showStats[show.id]) showStats[show.id] = { show, reservations: 0, tickets: 0, revenue: 0 }
+    showStats[show.id].reservations++
     if (r.seatIds) {
       r.seatIds.forEach(sid => {
-        showStats[showId].tickets++
-        showStats[showId].revenue += seatMap[sid]?.price ?? 0
+        showStats[show.id].tickets++
+        showStats[show.id].revenue += seatMap[sid]?.price ?? 0
       })
     }
   })
-  const topShows = shows
-    .filter(s => showStats[s.id])
-    .map(s => ({ show: s, ...showStats[s.id] }))
+  const topShows = Object.values(showStats)
     .sort((a, b) => b.reservations - a.reservations)
     .slice(0, 5)
 
@@ -316,22 +314,26 @@ function computeStats(
     canceled: performances.filter(p => p.status === 'CANCELED').length,
   }
 
-  // Customer ratio
+  // Customer ratio — userId present = registered user, otherwise guest
   const customerRatio = {
-    users: reservations.filter(r => r.user != null).length,
-    guests: reservations.filter(r => r.user == null).length,
+    users: activeRes.filter(r => r.userId != null).length,
+    guests: activeRes.filter(r => r.userId == null).length,
   }
 
-  // Activity by month (last 6 months)
-  const monthCounts: Record<string, number> = {}
+  // Activity by month (last 6 months) — sorted by actual date
+  const monthData: Record<string, { label: string; count: number; ts: number }> = {}
   reservations.forEach(r => {
     const d = new Date(r.createdAt)
-    const key = d.toLocaleString('sk-SK', { month: 'short', year: '2-digit' })
-    monthCounts[key] = (monthCounts[key] ?? 0) + 1
+    const ts = new Date(d.getFullYear(), d.getMonth(), 1).getTime()
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleString('sk-SK', { month: 'short', year: '2-digit' })
+    if (!monthData[key]) monthData[key] = { label, count: 0, ts }
+    monthData[key].count++
   })
-  const recentActivity = Object.entries(monthCounts)
-    .map(([month, count]) => ({ month, count }))
+  const recentActivity = Object.values(monthData)
+    .sort((a, b) => a.ts - b.ts)
     .slice(-6)
+    .map(({ label, count }) => ({ month: label, count }))
 
   return {
     totalRevenue,
