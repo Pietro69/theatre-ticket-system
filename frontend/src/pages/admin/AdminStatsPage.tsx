@@ -29,7 +29,7 @@ function exportCSV(reservations: AdminReservation[], _performances: Performance[
       r.performanceStartTime ? new Date(r.performanceStartTime).toLocaleString('sk-SK') : '—',
       r.customerName ?? '—',
       r.customerEmail ?? '—',
-      r.status === 'ACTIVE' ? 'Aktívna' : 'Zrušená',
+      r.status === 'PAID' ? 'Zaplatená' : r.status === 'ACTIVE' ? 'Aktívna' : r.status === 'PENDING' ? 'Čaká na platbu' : r.status === 'EXPIRED' ? 'Vypršaná' : 'Zrušená',
       new Date(r.createdAt).toLocaleString('sk-SK'),
     ]),
   ]
@@ -239,8 +239,8 @@ function computeStats(
   reservations: AdminReservation[],
   seats: Seat[],
 ): Stats {
-  const activeRes = reservations.filter(r => r.status === 'ACTIVE')
-  const canceledRes = reservations.filter(r => r.status === 'CANCELED')
+  const activeRes = reservations.filter(r => r.status === 'ACTIVE' || r.status === 'PAID')
+  const canceledRes = reservations.filter(r => r.status === 'CANCELED' || r.status === 'EXPIRED')
 
   // Revenue & tickets — from seat prices via hall capacity proxy
   // We sum seat prices per reservation using seatIds if available
