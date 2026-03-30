@@ -2,11 +2,41 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const TEAM = [
-  { name: 'Dominik Kontrik', role: 'Backend Developer', description: 'Stará sa o serverovú logiku, databázu a API, ktoré poháňajú celý rezervačný systém.', initials: 'DK', photo: '' },
-  { name: '-', role: '-', description: '-', initials: '-', photo: '' },
-  { name: '-', role: '-', description: '-', initials: '-', photo: '' },
-  { name: '-', role: '-', description: '-', initials: '-', photo: '' },
-  { name: '-', role: '-', description: '-', initials: '-', photo: '' },
+  {
+    name: 'Dominik Kontrik',
+    role: 'Backend Developer',
+    description: 'Zodpovedá za backend aplikácie, REST API, databázovú logiku a hlavné funkcie rezervačného systému.',
+    initials: 'DK',
+    photo: ''
+  },
+  {
+    name: 'Peter',
+    role: 'Frontend Developer',
+    description: 'Pracuje na používateľskom rozhraní, React komponentoch a napojení frontendu na backend API.',
+    initials: 'PV',
+    photo: ''
+  },
+  {
+    name: 'Aurel',
+    role: 'Tester',
+    description: 'Testuje používateľské scenáre, odhaľuje chyby a prináša spätnú väzbu z pohľadu používateľa.',
+    initials: 'AG',
+    photo: ''
+  },
+  {
+    name: 'Jakub',
+    role: 'Konzultant',
+    description: 'Pomáha s koordináciou tímu, prioritizáciou úloh a spracovaním spätnej väzby počas vývoja.',
+    initials: 'JJ',
+    photo: ''
+  },
+  {
+    name: 'Erik',
+    role: 'Dokumentácia',
+    description: 'Pripravuje projektovú dokumentáciu, zbiera podklady od tímu a spracováva priebeh vývoja.',
+    initials: 'ECH',
+    photo: ''
+  },
 ]
 
 function TeamCard({ member }: { member: typeof TEAM[0] }) {
@@ -37,10 +67,11 @@ export default function AboutPage() {
     <section className="about-section">
       <div className="about-intro">
         <span className="section-label">Tím</span>
-        <h2 className="section-title">O nás</h2>
+        <h2 className="section-title">O projekte</h2>
         <p>
-          Za každým predstavením stojí tím ľudí, ktorí milujú divadlo rovnako ako vy.
-          Spoznajte tváre, ktoré každý večer ožívajú zákulisím divadla Klára.
+          Na vývoji rezervačného systému Klára pracoval tím študentov, ktorí sa venovali
+          backendu, frontendu, testovaniu aj dokumentácii. Každý člen tímu mal svoju rolu
+          a podieľal sa na výslednej podobe aplikácie.
         </p>
       </div>
 
