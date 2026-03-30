@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 const TEAM = [
   {
-    name: 'Dominik Kontrik',
+    name: 'Dominik',
     role: 'Backend Developer',
     description: 'Zodpovedá za backend aplikácie, REST API, databázovú logiku a hlavné funkcie rezervačného systému.',
     initials: 'DK',
