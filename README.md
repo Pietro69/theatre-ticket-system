@@ -51,111 +51,6 @@ A full-stack web application for browsing theatre shows, booking seats, and mana
 
 ---
 
-## Architecture
-
-```
-theatre-ticket-system/
-├── backend/
-│   └── src/main/java/com/theatre/backend/
-│       ├── controller/       REST API endpoints
-│       ├── service/          Business logic
-│       ├── repository/       JPA repositories
-│       ├── entity/           Database entities
-│       ├── dto/              Request / Response DTOs
-│       ├── exception/        Custom exceptions + global handler
-│       └── config/           Security, CORS, mail configuration
-│
-└── frontend/
-    └── src/
-        ├── api/              Typed API client + response types
-        ├── context/          Global auth state (React Context)
-        ├── components/       Nav, Footer, Auth modals
-        └── pages/            All page components + admin panel
-```
-
----
-
-## Key Flows
-
-**Booking flow**
-```
-Browse shows → Select performance → Interactive seat map
-→ Login / Register → Confirm reservation
-→ Email with payment link → Stripe checkout → Paid confirmation email
-```
-
-**Admin flow**
-```
-Admin login → Dashboard → Manage shows / performances / halls / seats
-→ View all reservations → Export CSV → Statistics overview
-```
-
----
-
-## REST API Overview
-
-| Resource | Endpoints |
-|---|---|
-| Shows | `GET /api/shows`, `GET /api/shows/{id}`, `POST`, `PUT`, `DELETE` |
-| Performances | `GET /api/performances`, `GET /api/performances/show/{showId}` |
-| Seats | `GET /api/seats/hall/{hallId}`, `GET /api/performances/{id}/seats` |
-| Reservations | `GET`, `POST /api/reservations`, `DELETE /api/reservations/{id}/cancel` |
-| Auth | `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/verify` |
-| Payments | `POST /api/payments/checkout/{reservationId}`, `POST /api/payments/webhook` |
-| Users | `GET /api/users/{id}/reservations` |
-
----
-
-## Local Development
-
-### Prerequisites
-- Java 21+
-- Node.js 18+
-- PostgreSQL database (or use the Neon connection string)
-
-### Backend
-
-```bash
-cd backend
-# Set environment variables (or create application-local.yaml):
-# DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
-# MAIL_USERNAME, MAIL_PASSWORD, FRONTEND_URL
-
-./mvnw spring-boot:run
-# Runs on http://localhost:8080
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-# Runs on http://localhost:5173
-# Vite proxies /api/* to localhost:8080
-```
-
----
-
-## Environment Variables
-
-### Backend (Railway)
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `STRIPE_SECRET_KEY` | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `MAIL_USERNAME` | SMTP email address |
-| `MAIL_PASSWORD` | SMTP password |
-| `APP_FRONTEND_URL` | Frontend URL for email links and CORS |
-
-### Frontend (Vercel)
-| Variable | Description |
-|---|---|
-| `VITE_API_BASE_URL` | Backend API base URL |
-
----
-
 ## Screenshots
 
 > *Coming soon*
@@ -164,4 +59,5 @@ npm run dev
 
 ## Authors
 
-Built as a portfolio project.
+Peter Vojtík 
+Dominik Kontrik 
