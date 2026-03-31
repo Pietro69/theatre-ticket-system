@@ -53,11 +53,16 @@ A full-stack web application for browsing theatre shows, booking seats, and mana
 
 ## Screenshots
 
-> *Coming soon*
+<img width="1914" height="908" alt="image" src="https://github.com/user-attachments/assets/d4cbc5b6-5ca2-4409-81ab-ff18e0610a37" />
+<img width="1914" height="909" alt="image" src="https://github.com/user-attachments/assets/67b9fbc0-1b0c-4e3f-9d7f-6c0b51498cf1" />
+<img width="1914" height="908" alt="image" src="https://github.com/user-attachments/assets/4ee0662f-6717-42fc-832d-32a108c5d850" />
+<img width="1913" height="910" alt="image" src="https://github.com/user-attachments/assets/ce8a5645-db8e-437b-93ee-07474bd51e3d" />
+<img width="1916" height="909" alt="image" src="https://github.com/user-attachments/assets/16b77fa3-297d-4bb7-8523-444fef423112" />
+
 
 ---
 
 ## Authors
 
 Peter Vojtík 
-Dominik Kontrik 
+
