@@ -1,244 +1,167 @@
-# TheatreX – Rezervačný systém divadelných lístkov
+# Klára — Theatre Ticket Booking System
 
-Webová aplikácia pre rezerváciu divadelných lístkov. Backend: Spring Boot + H2. Frontend: React + TypeScript + Vite.
+A full-stack web application for browsing theatre shows, booking seats, and managing reservations — with Stripe payment integration, email notifications, and a complete admin dashboard.
 
----
-
-## Zmeny vykonané v backende (doplnené počas vývoja frontendu)
-
-| Čo | Kde | Prečo |
-|---|---|---|
-| `GET /api/shows/{id}` | `ShowController` + `ShowService` | Chýbal endpoint pre detail jedného predstavenia |
-| `GET /api/performances/{id}` | `PerformanceController` + `PerformanceService` | Chýbal endpoint pre detail jedného termínu |
-| `POST /api/auth/login` | nový `AuthController` + `UserService` | Neexistoval žiadny login endpoint — frontend sa nemohol prihlásiť |
-| `UserService.createUser` | `UserService` | Pri registrácii sa nenastavovala `role` ani `createdAt` → crash databázy |
-| Kontrola duplicitného emailu | `UserService` | Registrácia s existujúcim emailom hodila DB chybu namiesto čitateľnej 409 odpovede |
-| `@JsonProperty(WRITE_ONLY)` na `password` | `User.java` | Heslo sa vracalo v každej GET odpovedi — teraz sa iba číta (pri registrácii), nikdy neposiela späť |
-| JSON formát chybových odpovedí | `ApiExceptionHandler` | Chyby sa vracali ako plain text → frontend ich nevedel parsovať; teraz `{"message":"..."}` |
-| `NotFoundException` (HTTP 404) | nový `exception/NotFoundException` | Chýbal handler pre prípad keď záznam neexistuje |
-| CORS konfigurácia | nový `config/CorsConfig` | Bez CORS by frontend (port 5173) nemohol volať backend (port 8080) priamo |
-| Spring Security + vypnutý CSRF | `pom.xml` + nový `config/SecurityConfig` | `spring-boot-h2console` ťahal Spring Security tranzitívne → všetky POST requesty dostávali 403 Forbidden; CSRF je vypnutý (REST API je stateless) |
+**Live demo:** [klara-divadlo.site](https://www.klara-divadlo.site)
 
 ---
 
-## Požiadavky
+## Tech Stack
 
-| Nástroj | Verzia |
-|---|---|
-| Java | 21+ |
-| Node.js | 18+ |
-| npm | 9+ |
+**Frontend**
+- React 18 + TypeScript
+- Vite
+- React Router v6
+- Custom CSS (dark/light theme, fully responsive)
 
----
+**Backend**
+- Java 21 + Spring Boot 3
+- Spring Security + JWT-based authentication
+- Spring Data JPA + Hibernate
+- PostgreSQL (hosted on Neon)
 
-## Spustenie
+**Integrations**
+- Stripe — payment processing + webhook handling
+- JavaMail — transactional email (reservation confirmation, payment receipt)
 
-### 1. Backend (Spring Boot)
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-Backend beží na **http://localhost:8080**
-
-H2 konzola (prehliadač databázy): **http://localhost:8080/h2-console**
-- JDBC URL: `jdbc:h2:file:./data/theatredb`
-- Username: `sa`
-- Password: *(prázdne)*
+**Infrastructure**
+- Backend: [Railway](https://railway.app)
+- Frontend: [Vercel](https://vercel.com)
+- Database: [Neon](https://neon.tech) (serverless PostgreSQL)
 
 ---
 
-### 2. Frontend (React + Vite)
+## Features
 
-```bash
-cd frontend
-npm install       # len prvýkrát
-npm run dev
-```
+### For users
+- Browse theatre shows with genre filtering
+- View upcoming performances with date and time
+- Interactive seat map — select one or multiple seats in real time
+- Stripe-powered checkout with automatic reservation expiry (2 hours)
+- Email confirmation with a direct payment link
+- Account management — view, pay, or cancel reservations
+- Email verification on registration
+- Dark / light theme toggle
 
-Frontend beží na **http://localhost:5173**
-
-> Vite automaticky presmeruje `/api/*` na backend (port 8080) — CORS nie je problém počas vývoja.
+### For admins
+- Full admin dashboard — manage shows, performances, halls, and seats
+- Reservation overview with status tracking (Pending / Paid / Cancelled / Expired)
+- Statistics page — revenue, sold tickets, occupancy rate, top shows by bookings
+- Export all reservations to CSV
 
 ---
 
-## Štruktúra projektu
+## Architecture
 
 ```
 theatre-ticket-system/
-├── backend/                  Spring Boot aplikácia
+├── backend/
 │   └── src/main/java/com/theatre/backend/
-│       ├── controller/       REST endpointy
-│       ├── service/          Biznis logika
-│       ├── repository/       JPA repozitáre
-│       ├── entity/           JPA entity (DB tabuľky)
-│       ├── dto/              Request/Response objekty
-│       ├── exception/        Vlastné výnimky + handler
-│       └── config/           CORS konfigurácia
-└── frontend/                 React + TypeScript aplikácia
+│       ├── controller/       REST API endpoints
+│       ├── service/          Business logic
+│       ├── repository/       JPA repositories
+│       ├── entity/           Database entities
+│       ├── dto/              Request / Response DTOs
+│       ├── exception/        Custom exceptions + global handler
+│       └── config/           Security, CORS, mail configuration
+│
+└── frontend/
     └── src/
-        ├── api/              API typy + fetch funkcie
-        ├── context/          Globálny stav (auth, košík)
-        ├── components/       Nav, Footer, AuthModals
-        └── pages/            HomePage, ShowsPage, ShowDetailPage,
-                              SeatMapPage, HowPage
+        ├── api/              Typed API client + response types
+        ├── context/          Global auth state (React Context)
+        ├── components/       Nav, Footer, Auth modals
+        └── pages/            All page components + admin panel
 ```
 
 ---
 
-## REST API – prehľad endpointov
+## Key Flows
 
-### Shows (Predstavenia)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/shows` | Zoznam všetkých predstavení |
-| GET | `/api/shows/{id}` | Detail predstavenia |
-| POST | `/api/shows` | Vytvoriť predstavenie |
-
-### Performances (Termíny)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/performances` | Všetky termíny |
-| GET | `/api/performances/{id}` | Detail termínu |
-| GET | `/api/performances/show/{showId}` | Termíny pre dané predstavenie |
-| GET | `/api/performances/{id}/seats` | Mapa sedadiel s obsadenosťou |
-| GET | `/api/performances/{id}/occupied-seats` | ID obsadených sedadiel |
-| POST | `/api/performances` | Vytvoriť termín |
-
-### Halls (Sály)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/halls` | Zoznam sál |
-| POST | `/api/halls` | Vytvoriť sálu |
-
-### Seats (Sedadlá)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/seats/hall/{hallId}` | Sedadlá danej sály |
-| POST | `/api/seats` | Vytvoriť sedadlo |
-
-### Reservations (Rezervácie)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/reservations` | Všetky rezervácie |
-| GET | `/api/reservations/{id}` | Detail rezervácie |
-| POST | `/api/reservations` | Vytvoriť rezerváciu |
-| DELETE | `/api/reservations/{id}/cancel` | Zrušiť rezerváciu |
-
-### Users (Používatelia)
-| Metóda | URL | Popis |
-|---|---|---|
-| GET | `/api/users` | Zoznam používateľov |
-| POST | `/api/users` | Registrácia nového používateľa |
-| GET | `/api/users/{id}/reservations` | Rezervácie používateľa |
-
-### Auth (Prihlásenie)
-| Metóda | URL | Popis |
-|---|---|---|
-| POST | `/api/auth/login` | Prihlásenie (email + heslo) |
-
----
-
-## Testovanie API (príklady)
-
-### Vytvoriť sálu
-```bash
-curl -X POST http://localhost:8080/api/halls \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Hlavná sála","capacity":200}'
+**Booking flow**
+```
+Browse shows → Select performance → Interactive seat map
+→ Login / Register → Confirm reservation
+→ Email with payment link → Stripe checkout → Paid confirmation email
 ```
 
-### Vytvoriť sedadlá pre sálu (id=1)
-```bash
-curl -X POST http://localhost:8080/api/seats \
-  -H "Content-Type: application/json" \
-  -d '{"rowNumber":1,"seatNumber":1,"price":10.0,"hall":{"id":1}}'
+**Admin flow**
 ```
-
-### Vytvoriť predstavenie
-```bash
-curl -X POST http://localhost:8080/api/shows \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Hamlet","description":"Shakespearova tragédia.","genre":"Dráma","durationMinutes":150}'
-```
-
-### Vytvoriť termín (showId=1, hallId=1)
-```bash
-curl -X POST http://localhost:8080/api/performances \
-  -H "Content-Type: application/json" \
-  -d '{"startTime":"2026-04-15T19:00:00","status":"SCHEDULED","show":{"id":1},"hall":{"id":1}}'
-```
-
-### Registrovať používateľa
-```bash
-curl -X POST http://localhost:8080/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Ján Novák","email":"jan@example.com","password":"heslo123"}'
-```
-
-### Prihlásiť sa
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"jan@example.com","password":"heslo123"}'
-```
-
-### Vytvoriť rezerváciu (hosť bez registrácie)
-```bash
-curl -X POST http://localhost:8080/api/reservations \
-  -H "Content-Type: application/json" \
-  -d '{"performanceId":1,"seatIds":[1,2],"guestName":"Anna Kováčová","guestEmail":"anna@example.com"}'
-```
-
-### Vytvoriť rezerváciu (prihlásený používateľ)
-```bash
-curl -X POST http://localhost:8080/api/reservations \
-  -H "Content-Type: application/json" \
-  -d '{"performanceId":1,"seatIds":[3],"userId":1}'
-```
-
-### Zrušiť rezerváciu
-```bash
-curl -X DELETE http://localhost:8080/api/reservations/1/cancel
+Admin login → Dashboard → Manage shows / performances / halls / seats
+→ View all reservations → Export CSV → Statistics overview
 ```
 
 ---
 
-## Chybové odpovede
+## REST API Overview
 
-Všetky chyby vracajú JSON:
-```json
-{"message": "Popis chyby"}
-```
-
-| HTTP kód | Popis |
+| Resource | Endpoints |
 |---|---|
-| 400 | Neplatný request (chýbajúce pole, zlý formát, zlé heslo) |
-| 404 | Záznam nebol nájdený |
-| 409 | Konflikt (sedadlo už obsadené, email už existuje) |
+| Shows | `GET /api/shows`, `GET /api/shows/{id}`, `POST`, `PUT`, `DELETE` |
+| Performances | `GET /api/performances`, `GET /api/performances/show/{showId}` |
+| Seats | `GET /api/seats/hall/{hallId}`, `GET /api/performances/{id}/seats` |
+| Reservations | `GET`, `POST /api/reservations`, `DELETE /api/reservations/{id}/cancel` |
+| Auth | `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/verify` |
+| Payments | `POST /api/payments/checkout/{reservationId}`, `POST /api/payments/webhook` |
+| Users | `GET /api/users/{id}/reservations` |
 
 ---
 
-## Používateľský tok
+## Local Development
 
+### Prerequisites
+- Java 21+
+- Node.js 18+
+- PostgreSQL database (or use the Neon connection string)
+
+### Backend
+
+```bash
+cd backend
+# Set environment variables (or create application-local.yaml):
+# DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+# MAIL_USERNAME, MAIL_PASSWORD, FRONTEND_URL
+
+./mvnw spring-boot:run
+# Runs on http://localhost:8080
 ```
-Domov → Prezerať predstavenia
-       ↓
-Zoznam predstavení (filter podľa žánru)
-       ↓
-Detail predstavenia → výber termínu (dátum/čas)
-       ↓
-Mapa sály → kliknutím vybrať sedadlá
-       ↓
-Zadať meno + email (alebo prihlásiť sa)
-       ↓
-Potvrdiť → zobrazí sa číslo rezervácie
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+# Runs on http://localhost:5173
+# Vite proxies /api/* to localhost:8080
 ```
 
 ---
 
-## Poznámky k bezpečnosti
+## Environment Variables
 
-- Heslá sú uložené ako **plain text** — pre produkciu nutné pridať BCrypt hashing
-- Autentifikácia je bez JWT tokenov — pre produkciu implementovať Spring Security + JWT
+### Backend (Railway)
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `MAIL_USERNAME` | SMTP email address |
+| `MAIL_PASSWORD` | SMTP password |
+| `APP_FRONTEND_URL` | Frontend URL for email links and CORS |
+
+### Frontend (Vercel)
+| Variable | Description |
+|---|---|
+| `VITE_API_BASE_URL` | Backend API base URL |
+
+---
+
+## Screenshots
+
+> *Coming soon*
+
+---
+
+## Authors
+
+Built as a portfolio project.
