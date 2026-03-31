@@ -57,10 +57,13 @@ A full-stack web application for browsing theatre shows, booking seats, and mana
 
 ### Show Catalog
 <img width="1914" height="909" alt="image" src="https://github.com/user-attachments/assets/67b9fbc0-1b0c-4e3f-9d7f-6c0b51498cf1" />
+
 ### Interactive Seat Map
 <img width="1914" height="908" alt="image" src="https://github.com/user-attachments/assets/4ee0662f-6717-42fc-832d-32a108c5d850" />
+
 ### Reservation Confirmed 
 <img width="1913" height="910" alt="image" src="https://github.com/user-attachments/assets/ce8a5645-db8e-437b-93ee-07474bd51e3d" />
+
 ### My Reservations
 <img width="1916" height="909" alt="image" src="https://github.com/user-attachments/assets/16b77fa3-297d-4bb7-8523-444fef423112" />
 
